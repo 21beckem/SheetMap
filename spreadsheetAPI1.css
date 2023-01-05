@@ -1,0 +1,38 @@
+*:focus {
+    outline: none;
+}
+
+.sheetTbl {
+    font-family: Arial, Helvetica, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+}
+.sheetTbl td, .sheetTbl th {
+    border: 1px solid #ddd;
+    padding: 8px;
+    height: 20px;
+}
+.sheetTbl tr:nth-child(even){ background-color: #f2f2f2; }
+/* .sheetTbl tr:hover { background-color: #ddd; } */
+.sheetTbl th {
+    padding-top: 12px;
+    padding-bottom: 12px;
+    text-align: left;
+    background-color: #04AA6D;
+    color: white;
+}
+.sheetTbl select {
+    border-radius: 5px;
+    width: 100%;
+    height: 100%;
+    background-color: transparent;
+    border: none;
+    font-size: medium;
+}
+.sheetTbl td:has(select):hover {
+    background-color: #ddd;
+}
+.sheetTbl td:has(select) {
+    padding: 0;
+    padding-right: 5px;
+}
