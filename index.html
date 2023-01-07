@@ -9,13 +9,14 @@
     <title>speadsheetAPI1</title>
 </head>
 <body>
+    <button onclick="ss.saveChanges();">SAVE</button>
     <div id="BIGtb"></div>
     <script>
+function _(x) { return document.getElementById(x); }
 const TablePreferences = {
     url : 'https://script.google.com/macros/s/AKfycby4GyC32C5olX1ihzKsvLZVxMk3AbViZLu2_EQpYuQJQJWWYBBhjsbNeX2uqXYMC3RxOA/exec',
     header : ['Date Referred', 'Referral Name', 'Area', 'Record Status', 'Sent Status', 'AB Status', 'Finding Source'],
     filter : {
-        column : 2,
         function : myFilterFunction
     },
     adjust_cols : {
@@ -38,8 +39,11 @@ const TablePreferences = {
         }
     }
 };
-function myFilterFunction(val) {
-    return val != '';
+function myFilterFunction(row) {
+    const Areas = row[2];
+    const Status = row[3];
+    const Sent = row[4];
+    return ( Areas=="Trollhättan" || Areas=="Karlstad" || Areas=="Alingsås" ) && ( Status=="Yellow" || Status=="Green" ) && ( Sent=="Sent" );
 }
 
 const ss = new SpreadsheetApp(TablePreferences);
