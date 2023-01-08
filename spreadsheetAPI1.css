@@ -36,3 +36,7 @@
     padding: 0;
     padding-right: 5px;
 }
+.changedHighlight {
+    transition: box-shadow 0.5s;
+    box-shadow: inset 4px 0px 4px #ff6868;
+}
