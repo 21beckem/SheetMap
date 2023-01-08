@@ -19,13 +19,8 @@ const TablePreferences = {
     filter : {
         function : myFilterFunction
     },
-    adjust_cols : {
-        0 : {
-            hidden : true
-        },
-        4 : {
-            hidden : true
-        },
+    hidden_cols : [0,4],
+    editable_cols : {
         5 : {
             dropdown : {
                 // the first option is what it will default to if blank in sheets, so if you want to allow blank have '' as the first option
