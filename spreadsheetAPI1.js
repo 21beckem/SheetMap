@@ -28,6 +28,9 @@ class SpreadsheetApp {
                 row.classList.remove('changedHighlight');
             }
         }
+        if (this.save_button_id != "") {
+            document.getElementById(this.save_button_id).style.display = (this.changedRows.length == 0) ? "none" : "";
+        }
     }
     static getSingleCell(row, ORGcol, childEl = false) {
         if (childEl) {
@@ -64,12 +67,73 @@ class SpreadsheetApp {
 
         this.prefs = prefs;
         this.prefs.editable_cols = prefs.editable_cols || {};
-        this.prefs.hidden_cols = prefs.hidden_cols || [];
+        this.prefs.hidden_cols = prefs.hidden_cols.sort() || [];
+        this.prefs.save_button_id = prefs.save_button_id || "";
         this.colsToChange = Object.keys(this.prefs.editable_cols).concat(this.prefs.hidden_cols).map(x => parseInt(x));
         SpreadsheetApp.colsToHide = this.prefs.hidden_cols;
         SpreadsheetApp.editable_cols = this.prefs.editable_cols;
+        SpreadsheetApp.save_button_id = this.prefs.save_button_id;
+    }
+    saveChanges() {
+        let rowsToSave = Array();
+        let rowPoses = Array();
+        for (let i = 0; i < SpreadsheetApp.changedRows.length; i++) {
+            const n = SpreadsheetApp.changedRows[i];
+            const tr = document.getElementById('rowRangeId_' + String(n));
+            console.log(tr);
+
+            // convert tr to array of data. DONT FORGET HIDDEN COLS!
+            const td = tr.getElementsByTagName('td');
+            const tdRawArr = Array.from(td);
+            let tdArr = tdRawArr.map((tag) => {
+                if (tag.children.length > 0) {
+                    if (tag.firstChild.nodeName == 'SELECT') {
+                        return tag.firstChild.value;
+                    } else {
+                        tag.innerText;
+                    }
+                } else {
+                    return tag.innerText;
+                }
+            });
+            
+            for (let ii = 0; ii < this.prefs.hidden_cols.length; ii++) {
+                const c = this.prefs.hidden_cols[ii];
+                const thisChangedRow = SpreadsheetApp.rawRes[SpreadsheetApp.pairedCol[n][0]];
+                console.log(thisChangedRow);
+                tdArr.splice(c, 0, thisChangedRow[c]);
+            }
+            //console.log(tdArr);
+            rowsToSave.push(tdArr);
+            rowPoses.push(SpreadsheetApp.pairedCol[n][0]);
+            
+        }
+        // save it :)
+        this.saveRowDataToSpreadsheet(rowsToSave, rowPoses);
+    }
+    saveRowDataToSpreadsheet(rows, rowPositions) {
+        // make loading screen
+        // - - -
+        console.log(rows, rowPositions);
+
+        fetch(this.prefs.url + '?type=w&range=' + this.fetchedRange + '&pgNam=' + this.fetchedPgName + '&rowData=' + rows + '&rowPoses=' + rowPositions)
+        .then((response) => response.json())
+        .then((data) => {
+            /*
+            if (received confirmation) {
+                // say it saved
+                // update the original data and stuff
+                    // maybe just refresh...
+            } else {
+                // say it didnt work
+                // have a try again button or back to editing
+            }
+            */
+        });
     }
     fetch(pgName, range, container_id) {
+        this.fetchedRange = range;
+        this.fetchedPgName = pgName;
         fetch(this.prefs.url + '?type=r&range=' + range + '&pgNam=' + pgName)
         .then((response) => response.json())
         .then((data) => {
@@ -93,6 +157,9 @@ class SpreadsheetApp {
             let tb = this.makeTableHTML(data);
             document.getElementById(container_id).innerHTML = tb;
         });
+        if (SpreadsheetApp.save_button_id != "") {
+            document.getElementById(this.prefs.save_button_id).style.display = "none";
+        }
     }
     makeTableHTML(arr) {
         var result = '<table class="sheetTbl" border=1>';
@@ -137,8 +204,5 @@ class SpreadsheetApp {
         } catch (e) {}
 
         return val;
-    }
-    saveChanges() {
-        console.log(SpreadsheetApp.changedRows);
     }
 }
