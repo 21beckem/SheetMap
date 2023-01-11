@@ -9,13 +9,14 @@
     <title>speadsheetAPI1</title>
 </head>
 <body>
-    <button onclick="ss.saveChanges();">SAVE</button>
+    <button id="bigSaveBtn" onclick="ss.saveChanges();">SAVE</button>
     <div id="BIGtb"></div>
     <script>
 function _(x) { return document.getElementById(x); }
 const TablePreferences = {
     url : 'https://script.google.com/macros/s/AKfycby4GyC32C5olX1ihzKsvLZVxMk3AbViZLu2_EQpYuQJQJWWYBBhjsbNeX2uqXYMC3RxOA/exec',
     header : ['Date Referred', 'Referral Name', 'Area', 'Record Status', 'Sent Status', 'AB Status', 'Finding Source'],
+    save_button_id : "bigSaveBtn",
     filter : {
         function : myFilterFunction
     },
