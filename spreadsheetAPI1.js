@@ -54,9 +54,10 @@ class SpreadsheetApp {
     static changedRows = Array();
     static colsToHide = undefined;
     static editable_cols = [];
+    
     constructor(prefs = {}) {
         //check prefs
-        const Rprefs = ['url'];
+        const Rprefs = ['url', 'reference_col'];
         let p = Object.keys(prefs);
         Rprefs.forEach(e => {
             if (!p.includes(e)) {
@@ -75,12 +76,35 @@ class SpreadsheetApp {
         SpreadsheetApp.save_button_id = this.prefs.save_button_id;
     }
     saveChanges() {
+        let [rowsToSave, rowPoses] = this.getCurrentDataOfEditedRows();
+        //console.log(rowsToSave);
+        //console.log(rowPoses);
+        let toSave = Array();
+        let options = {
+            "ref" : this.prefs.reference_col,
+            "edited" : Object.keys(this.prefs.editable_cols).map(x => parseInt(x))
+        };
+        for (let i = 0; i < rowsToSave.length; i++) {
+            const r = rowsToSave[i];
+            const rN = SpreadsheetApp.pairedCol[SpreadsheetApp.changedRows[i]][0];
+            toSave.push({
+                "relRow" : rN,
+                "row" : r
+            });
+        }
+        console.log(toSave);
+        console.log(options);
+
+        // save it :)
+        this.saveRowDataToSpreadsheet(toSave, options);
+    }
+    getCurrentDataOfEditedRows() {
         let rowsToSave = Array();
         let rowPoses = Array();
         for (let i = 0; i < SpreadsheetApp.changedRows.length; i++) {
             const n = SpreadsheetApp.changedRows[i];
             const tr = document.getElementById('rowRangeId_' + String(n));
-            console.log(tr);
+            //console.log(tr);
 
             // convert tr to array of data. DONT FORGET HIDDEN COLS!
             const td = tr.getElementsByTagName('td');
@@ -100,7 +124,7 @@ class SpreadsheetApp {
             for (let ii = 0; ii < this.prefs.hidden_cols.length; ii++) {
                 const c = this.prefs.hidden_cols[ii];
                 const thisChangedRow = SpreadsheetApp.rawRes[SpreadsheetApp.pairedCol[n][0]];
-                console.log(thisChangedRow);
+                //console.log(thisChangedRow);
                 tdArr.splice(c, 0, thisChangedRow[c]);
             }
             //console.log(tdArr);
@@ -108,17 +132,17 @@ class SpreadsheetApp {
             rowPoses.push(SpreadsheetApp.pairedCol[n][0]);
             
         }
-        // save it :)
-        this.saveRowDataToSpreadsheet(rowsToSave, rowPoses);
+        return [rowsToSave, rowPoses];
     }
-    saveRowDataToSpreadsheet(rows, rowPositions) {
+    saveRowDataToSpreadsheet(toSave, options) {
         // make loading screen
         // - - -
-        console.log(rows, rowPositions);
+        //console.log(toSave, options);
 
-        fetch(this.prefs.url + '?type=w&range=' + this.fetchedRange + '&pgNam=' + this.fetchedPgName + '&rowData=' + rows + '&rowPoses=' + rowPositions)
+        fetch(this.prefs.url + '?type=w&range=' + this.fetchedRange + '&pgNam=' + this.fetchedPgName + '&rows=' + encodeURIComponent(JSON.stringify(toSave)) + '&options=' + encodeURIComponent(JSON.stringify(options)) )
         .then((response) => response.json())
         .then((data) => {
+            console.log(data);
             /*
             if (received confirmation) {
                 // say it saved
