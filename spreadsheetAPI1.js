@@ -29,8 +29,11 @@ class SpreadsheetApp {
             }
         }
         if (this.save_button_id != "") {
-            document.getElementById(this.save_button_id).style.display = (this.changedRows.length == 0) ? "none" : "";
+            this.hideSaveButton(this.changedRows.length == 0);
         }
+    }
+    static hideSaveButton(onOff) {
+        document.getElementById(this.save_button_id).style.right = (onOff) ? "-" + (document.getElementById(this.save_button_id).offsetWidth + 10) + "px" : "20px";
     }
     static getSingleCell(row, ORGcol, childEl = false) {
         if (childEl) {
@@ -74,6 +77,10 @@ class SpreadsheetApp {
         SpreadsheetApp.colsToHide = this.prefs.hidden_cols;
         SpreadsheetApp.editable_cols = this.prefs.editable_cols;
         SpreadsheetApp.save_button_id = this.prefs.save_button_id;
+        if (SpreadsheetApp.save_button_id != "") {
+            document.getElementById(this.prefs.save_button_id).classList.add('speadsheetAPI_saveBtn');
+            SpreadsheetApp.hideSaveButton(true);
+        }
     }
     saveChanges() {
         let [rowsToSave, rowPoses] = this.getCurrentDataOfEditedRows();
@@ -138,8 +145,9 @@ class SpreadsheetApp {
         // make loading screen
         // - - -
         //console.log(toSave, options);
-
-        fetch(this.prefs.url + '?type=w&range=' + this.fetchedRange + '&pgNam=' + this.fetchedPgName + '&rows=' + encodeURIComponent(JSON.stringify(toSave)) + '&options=' + encodeURIComponent(JSON.stringify(options)) )
+        const reqUrl = this.prefs.url + '?type=w&range=' + this.fetchedRange + '&pgNam=' + this.fetchedPgName + '&rows=' + encodeURIComponent(JSON.stringify(toSave)) + '&options=' + encodeURIComponent(JSON.stringify(options));
+        console.log(reqUrl);
+        fetch(reqUrl)
         .then((response) => response.json())
         .then((data) => {
             console.log(data);
@@ -153,6 +161,7 @@ class SpreadsheetApp {
                 // have a try again button or back to editing
             }
             */
+            location.reload();
         });
     }
     fetch(pgName, range, container_id) {
@@ -180,10 +189,10 @@ class SpreadsheetApp {
             }
             let tb = this.makeTableHTML(data);
             document.getElementById(container_id).innerHTML = tb;
+            if (SpreadsheetApp.save_button_id != "") {
+                SpreadsheetApp.hideSaveButton(true);
+            }
         });
-        if (SpreadsheetApp.save_button_id != "") {
-            document.getElementById(this.prefs.save_button_id).style.display = "none";
-        }
     }
     makeTableHTML(arr) {
         var result = '<table class="sheetTbl" border=1>';
