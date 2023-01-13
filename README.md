@@ -14,7 +14,8 @@ A simple JavaScript API to edit ranges of data on Google Sheets without hastle!
     <div id="myDIV"><div>
     <script>
     const TablePreferences = {
-        url : 'your Google-Apps-Script url',
+        url : 'your Google-Apps-Script url here',
+        reference_col : 0
     };
 
     const ss = new SpreadsheetApp(TablePreferences);
