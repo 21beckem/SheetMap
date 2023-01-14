@@ -34,6 +34,7 @@
     background-color: transparent;
     border: none;
     font-size: medium;
+    color: inherit;
 }
 .sheetTbl td:has(select):hover {
     background-color: #ddd;
