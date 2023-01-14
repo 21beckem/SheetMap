@@ -1,5 +1,6 @@
 class SpreadsheetApp {
-    static change(rowI) {
+    static change(rowI, colI, el) {
+        //console.log(rowI, colI);
         const thisChangedRow = this.rawRes[this.pairedCol[rowI][0]];
         //console.log(el, rowI, colI_ORG, val, thisChangedRow);
         let same = true;
@@ -28,8 +29,29 @@ class SpreadsheetApp {
                 row.classList.remove('changedHighlight');
             }
         }
+        this.editsMade = this.changedRows.length != 0;
         if (this.save_button_id != "") {
-            this.hideSaveButton(this.changedRows.length == 0);
+            this.hideSaveButton(!this.editsMade);
+        }
+        
+        // conditional formating:
+        let found = false;
+        if (this.conditionalCols.includes(colI)) {
+            const opsList = this.conditional_formatting[colI];
+            for (let i = 0; i < Object.keys(opsList).length; i++) {
+                const ops = opsList[Object.keys(opsList)[i]];
+                if (el.value == Object.keys(opsList)[i]) {
+                    //this is where we actually apply the formatting:
+                    el.parentElement.style.cssText = ops;
+                    found = true;
+                    break;
+                    //console.log(val);
+                }
+            }
+            //console.log(val, aj, loc, ops);
+        }
+        if (!found) {
+            el.parentElement.style.cssText = '';
         }
     }
     static hideSaveButton(onOff) {
@@ -52,6 +74,7 @@ class SpreadsheetApp {
         }
         return newNum;
     }
+    static editsMade = false;
     static rawRes = Array();
     static pairedCol = Array();
     static changedRows = Array();
@@ -65,7 +88,7 @@ class SpreadsheetApp {
         Rprefs.forEach(e => {
             if (!p.includes(e)) {
                 console.error('missing required prefrences. Check the documentation for more details');
-                throw new Error('must have these values set: {' + p.join(', ') + '}');
+                throw new Error('must have these values set: {' + Rprefs.join(', ') + '}');
             }
         });
 
@@ -73,10 +96,13 @@ class SpreadsheetApp {
         this.prefs.editable_cols = prefs.editable_cols || {};
         this.prefs.hidden_cols = prefs.hidden_cols.sort() || [];
         this.prefs.save_button_id = prefs.save_button_id || "";
+        this.prefs.conditional_formatting = prefs.conditional_formatting || {};
         this.colsToChange = Object.keys(this.prefs.editable_cols).concat(this.prefs.hidden_cols).map(x => parseInt(x));
         SpreadsheetApp.colsToHide = this.prefs.hidden_cols;
         SpreadsheetApp.editable_cols = this.prefs.editable_cols;
         SpreadsheetApp.save_button_id = this.prefs.save_button_id;
+        SpreadsheetApp.conditionalCols = Object.keys(this.prefs.conditional_formatting).map(x => parseInt(x));
+        SpreadsheetApp.conditional_formatting = this.prefs.conditional_formatting;
         if (SpreadsheetApp.save_button_id != "") {
             document.getElementById(this.prefs.save_button_id).classList.add('speadsheetAPI_saveBtn');
             SpreadsheetApp.hideSaveButton(true);
@@ -211,7 +237,7 @@ class SpreadsheetApp {
                         continue;
                     }
                     const aj = this.prefs.editable_cols[j];
-                    result += '<td id="' + idStr + '">' + this.makeAjustedCell(arr[i][j], aj, [i,j]) + '</td>';
+                    result += '<td id="' + idStr + '"' + this.addConditionalFormatting(arr[i][j], aj, [i,j]) + '>' + this.makeAjustedCell(arr[i][j], aj, [i,j]) + '</td>';
 
                 } else {
                     result += '<td id="' + idStr + '">' + arr[i][j] + '</td>';
@@ -225,7 +251,7 @@ class SpreadsheetApp {
     makeAjustedCell(val, aj, loc) {
         try {
             if (aj.dropdown.options.length > 0) {
-                let output = '<select id="dropdown_' + loc.join(',') + '" onchange="SpreadsheetApp.change(' + loc[0] + ')">';
+                let output = '<select id="dropdown_' + loc.join(',') + '" onchange="SpreadsheetApp.change(' + loc[0] + ',' + loc[1] + ',this)">';
                 for (let i = 0; i < aj.dropdown.options.length; i++) {
                     const el = aj.dropdown.options[i];
                     const sel = (val == el) ? ' selected' : '';
@@ -237,5 +263,25 @@ class SpreadsheetApp {
         } catch (e) {}
 
         return val;
+    }
+    addConditionalFormatting(val, aj, loc) {
+        if (SpreadsheetApp.conditionalCols.includes(loc[1])) {
+            const opsList = SpreadsheetApp.conditional_formatting[loc[1]];
+            for (let i = 0; i < Object.keys(opsList).length; i++) {
+                const ops = opsList[Object.keys(opsList)[i]];
+                if (val == Object.keys(opsList)[i]) {
+                    //this is where we actually apply the formatting:
+                    return 'style="' + ops + '"';
+                    //console.log(val);
+                }
+            }
+            //console.log(val, aj, loc, ops);
+        }
+        return '';
+    }
+}
+window.onbeforeunload = function () {
+    if (SpreadsheetApp.editsMade) {
+        return "If you reload this page, your previous action will be repeated";
     }
 }
