@@ -104,7 +104,7 @@ class SheetMap {
         SheetMap.conditionalCols = Object.keys(this.prefs.conditional_formatting).map(x => parseInt(x));
         SheetMap.conditional_formatting = this.prefs.conditional_formatting;
         if (SheetMap.save_button_id != "") {
-            document.getElementById(this.prefs.save_button_id).classList.add('spreadsheetAPI_saveBtn');
+            document.getElementById(this.prefs.save_button_id).classList.add('SheetMap_saveBtn');
             SheetMap.hideSaveButton(true);
         }
     }
