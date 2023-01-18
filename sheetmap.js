@@ -1,4 +1,4 @@
-class SpreadsheetApp {
+class SheetMap {
     static change(rowI, colI, el) {
         //console.log(rowI, colI);
         const thisChangedRow = this.rawRes[this.pairedCol[rowI][0]];
@@ -98,14 +98,14 @@ class SpreadsheetApp {
         this.prefs.save_button_id = prefs.save_button_id || "";
         this.prefs.conditional_formatting = prefs.conditional_formatting || {};
         this.colsToChange = Object.keys(this.prefs.editable_cols).concat(this.prefs.hidden_cols).map(x => parseInt(x));
-        SpreadsheetApp.colsToHide = this.prefs.hidden_cols;
-        SpreadsheetApp.editable_cols = this.prefs.editable_cols;
-        SpreadsheetApp.save_button_id = this.prefs.save_button_id;
-        SpreadsheetApp.conditionalCols = Object.keys(this.prefs.conditional_formatting).map(x => parseInt(x));
-        SpreadsheetApp.conditional_formatting = this.prefs.conditional_formatting;
-        if (SpreadsheetApp.save_button_id != "") {
-            document.getElementById(this.prefs.save_button_id).classList.add('speadsheetAPI_saveBtn');
-            SpreadsheetApp.hideSaveButton(true);
+        SheetMap.colsToHide = this.prefs.hidden_cols;
+        SheetMap.editable_cols = this.prefs.editable_cols;
+        SheetMap.save_button_id = this.prefs.save_button_id;
+        SheetMap.conditionalCols = Object.keys(this.prefs.conditional_formatting).map(x => parseInt(x));
+        SheetMap.conditional_formatting = this.prefs.conditional_formatting;
+        if (SheetMap.save_button_id != "") {
+            document.getElementById(this.prefs.save_button_id).classList.add('spreadsheetAPI_saveBtn');
+            SheetMap.hideSaveButton(true);
         }
     }
     saveChanges() {
@@ -119,14 +119,14 @@ class SpreadsheetApp {
         };
         for (let i = 0; i < rowsToSave.length; i++) {
             const r = rowsToSave[i];
-            const rN = SpreadsheetApp.pairedCol[SpreadsheetApp.changedRows[i]][0];
+            const rN = SheetMap.pairedCol[SheetMap.changedRows[i]][0];
             toSave.push({
                 "relRow" : rN,
                 "row" : r
             });
         }
-        console.log(toSave);
-        console.log(options);
+        //console.log(toSave);
+        //console.log(options);
 
         // save it :)
         this.saveRowDataToSpreadsheet(toSave, options);
@@ -134,8 +134,8 @@ class SpreadsheetApp {
     getCurrentDataOfEditedRows() {
         let rowsToSave = Array();
         let rowPoses = Array();
-        for (let i = 0; i < SpreadsheetApp.changedRows.length; i++) {
-            const n = SpreadsheetApp.changedRows[i];
+        for (let i = 0; i < SheetMap.changedRows.length; i++) {
+            const n = SheetMap.changedRows[i];
             const tr = document.getElementById('rowRangeId_' + String(n));
             //console.log(tr);
 
@@ -156,13 +156,13 @@ class SpreadsheetApp {
             
             for (let ii = 0; ii < this.prefs.hidden_cols.length; ii++) {
                 const c = this.prefs.hidden_cols[ii];
-                const thisChangedRow = SpreadsheetApp.rawRes[SpreadsheetApp.pairedCol[n][0]];
+                const thisChangedRow = SheetMap.rawRes[SheetMap.pairedCol[n][0]];
                 //console.log(thisChangedRow);
                 tdArr.splice(c, 0, thisChangedRow[c]);
             }
             //console.log(tdArr);
             rowsToSave.push(tdArr);
-            rowPoses.push(SpreadsheetApp.pairedCol[n][0]);
+            rowPoses.push(SheetMap.pairedCol[n][0]);
             
         }
         return [rowsToSave, rowPoses];
@@ -187,6 +187,7 @@ class SpreadsheetApp {
                 // have a try again button or back to editing
             }
             */
+            SheetMap.editsMade = false;
             location.reload();
         });
     }
@@ -196,16 +197,16 @@ class SpreadsheetApp {
         fetch(this.prefs.url + '?type=r&range=' + range + '&pgNam=' + pgName)
         .then((response) => response.json())
         .then((data) => {
-            SpreadsheetApp.rawRes = data;
+            SheetMap.rawRes = data;
             if (this.prefs.hasOwnProperty('filter')) {
                 //console.log(data);
-                SpreadsheetApp.pairedCol = Array();
+                SheetMap.pairedCol = Array();
                 let i = -1;
                 let ii = 0;
                 data = data.filter((row) => {
                     i += 1;
                     if (this.prefs.filter.function(row)) {
-                        SpreadsheetApp.pairedCol.push([i, ii]);
+                        SheetMap.pairedCol.push([i, ii]);
                         ii += 1;
                         return true;
                     } else {
@@ -215,15 +216,15 @@ class SpreadsheetApp {
             }
             let tb = this.makeTableHTML(data);
             document.getElementById(container_id).innerHTML = tb;
-            if (SpreadsheetApp.save_button_id != "") {
-                SpreadsheetApp.hideSaveButton(true);
+            if (SheetMap.save_button_id != "") {
+                SheetMap.hideSaveButton(true);
             }
         });
     }
     makeTableHTML(arr) {
         var result = '<table class="sheetTbl" border=1>';
         if (this.prefs.hasOwnProperty('header')) {
-            SpreadsheetApp.colsToHide.forEach(n => {
+            SheetMap.colsToHide.forEach(n => {
                 this.prefs.header.splice(n, 1);
             });
             result += '<tr><th>' + this.prefs.header.join('</th><th>') + '</th></tr>';
@@ -251,7 +252,7 @@ class SpreadsheetApp {
     makeAjustedCell(val, aj, loc) {
         try {
             if (aj.dropdown.options.length > 0) {
-                let output = '<select id="dropdown_' + loc.join(',') + '" onchange="SpreadsheetApp.change(' + loc[0] + ',' + loc[1] + ',this)">';
+                let output = '<select id="dropdown_' + loc.join(',') + '" onchange="SheetMap.change(' + loc[0] + ',' + loc[1] + ',this)">';
                 for (let i = 0; i < aj.dropdown.options.length; i++) {
                     const el = aj.dropdown.options[i];
                     const sel = (val == el) ? ' selected' : '';
@@ -265,8 +266,8 @@ class SpreadsheetApp {
         return val;
     }
     addConditionalFormatting(val, aj, loc) {
-        if (SpreadsheetApp.conditionalCols.includes(loc[1])) {
-            const opsList = SpreadsheetApp.conditional_formatting[loc[1]];
+        if (SheetMap.conditionalCols.includes(loc[1])) {
+            const opsList = SheetMap.conditional_formatting[loc[1]];
             for (let i = 0; i < Object.keys(opsList).length; i++) {
                 const ops = opsList[Object.keys(opsList)[i]];
                 if (val == Object.keys(opsList)[i]) {
@@ -281,7 +282,7 @@ class SpreadsheetApp {
     }
 }
 window.onbeforeunload = function () {
-    if (SpreadsheetApp.editsMade) {
+    if (SheetMap.editsMade) {
         return "If you reload this page, your previous action will be repeated";
     }
 }
