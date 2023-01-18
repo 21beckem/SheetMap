@@ -9,8 +9,11 @@ A simple JavaScript API to edit ranges of data on Google Sheets without any hast
 2. Deploy that as a webapp and copy the url
 3. In your app:
 ```html
+<head>
+    <link rel="stylesheet" href="path/to/sheetmap.css">
+</head>
 <body>
-    <script src="path/to/spreadsheetAPI1.js"></script>
+    <script src="path/to/sheetmap.js"></script>
     <div id="myDIV"><div>
     <script>
     const TablePreferences = {
