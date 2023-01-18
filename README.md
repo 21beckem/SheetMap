@@ -30,11 +30,11 @@ A simple JavaScript API to edit ranges of data on Google Sheets without any hast
 ### url (*required*)
 * this is the URL you got from deploying the `sheetmap_api.gs` script as a web-app in Google Apps Scripts.
 * example: [Simple Usage](#simple-usage)
-
+---
 ### reference_col (*required*)
 * this is a column of unique data (like a date and time) that the system uses as a refrence when you save your data back to google sheets.
 * example: [Simple Usage](#simple-usage)
-
+---
 ### header
 * adds a header row. Takes an array of strings. Doesn't *have* to be the same length as the width of the table but probably should be.
 * example:
@@ -44,7 +44,7 @@ const TablePreferences = {
     header : ['Col 1 Header', 'Hello', 'World']
 };
 ```
-
+---
 ### filter
 * supply a function to filter through the rows to not show some of them.
 * Function must take 1 arg which is an array with the values of the rows
@@ -57,14 +57,14 @@ const TablePreferences = {
         function : myFilterFunction
     }
 };
-
+---
 // this will show all rows where their age (col 2) is more than 10
 function myFilterFunction(row) {
     const AgeColValue = parseInt( row[1] );
     return ( AgeColValue > 10 );
 }
 ```
-
+---
 ### hidden_cols
 * if you do not want to show certain columns, use this
 * supply an array with the *indicies* of the rows to hide
@@ -78,14 +78,13 @@ const TablePreferences = {
     hidden_cols : [0,4]
 };
 ```
-
+---
 ### editable_cols
 * This is the whole point of being able to save what you edit on the table.
 * __No cell is editable unless listed in this prefrence__
 * list objects with the names of those objects being the indicies of the rows to edit
 * inside each object is another object with the name of which being the type of editable column you want
     * currently the only option is `dropdown` but more are coming
-
 Dropdown:
 * provide an array of options that the user can choose from
 * __Note:__ if there's no value in the cell in speadsheets or the cell is empty, the code we default to the first option.
@@ -106,7 +105,7 @@ const TablePreferences = {
     }
 };
 ```
-
+---
 ### conditional_formatting
 * Just like google spreadsheets has conditional formatting, so do we :)
 * List objects with the name of which breing the index of the row to have the formatting.
