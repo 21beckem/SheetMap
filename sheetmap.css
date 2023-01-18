@@ -48,7 +48,7 @@
     transform: translate(10px);
     opacity: 0.93;
 }
-.speadsheetAPI_saveBtn {
+.SheetMap_saveBtn {
     transition: right 0.2s ease;
     position: fixed;
     top: 20px;
