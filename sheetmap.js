@@ -55,7 +55,7 @@ class SheetMap {
         }
     }
     static hideSaveButton(onOff) {
-        document.getElementById(this.save_button_id).style.right = (onOff) ? "-" + (document.getElementById(this.save_button_id).offsetWidth + 10) + "px" : "20px";
+        document.getElementById('SheetMap_saveBtn').style.display = (onOff) ? "none" : "";
     }
     static getSingleCell(row, ORGcol, childEl = false) {
         if (childEl) {
@@ -95,18 +95,12 @@ class SheetMap {
         this.prefs = prefs;
         this.prefs.editable_cols = prefs.editable_cols || {};
         this.prefs.hidden_cols = prefs.hidden_cols.sort() || [];
-        this.prefs.save_button_id = prefs.save_button_id || "";
         this.prefs.conditional_formatting = prefs.conditional_formatting || {};
         this.colsToChange = Object.keys(this.prefs.editable_cols).concat(this.prefs.hidden_cols).map(x => parseInt(x));
         SheetMap.colsToHide = this.prefs.hidden_cols;
         SheetMap.editable_cols = this.prefs.editable_cols;
-        SheetMap.save_button_id = this.prefs.save_button_id;
         SheetMap.conditionalCols = Object.keys(this.prefs.conditional_formatting).map(x => parseInt(x));
         SheetMap.conditional_formatting = this.prefs.conditional_formatting;
-        if (SheetMap.save_button_id != "") {
-            document.getElementById(this.prefs.save_button_id).classList.add('SheetMap_saveBtn');
-            SheetMap.hideSaveButton(true);
-        }
     }
     saveChanges() {
         let [rowsToSave, rowPoses] = this.getCurrentDataOfEditedRows();
@@ -216,13 +210,12 @@ class SheetMap {
             }
             let tb = this.makeTableHTML(data);
             document.getElementById(container_id).innerHTML = tb;
-            if (SheetMap.save_button_id != "") {
-                SheetMap.hideSaveButton(true);
-            }
+            SheetMap.hideSaveButton(true);
         });
     }
     makeTableHTML(arr) {
-        var result = '<table class="sheetTbl" border=1>';
+        var result = '<div class="SheetMapTable"><button id="SheetMap_saveBtn" onclick="ss.saveChanges();">Save</button>';
+        result += '<table class="sheetTbl" border=1>';
         if (this.prefs.hasOwnProperty('header')) {
             SheetMap.colsToHide.forEach(n => {
                 this.prefs.header.splice(n, 1);
@@ -246,7 +239,7 @@ class SheetMap {
             }
             result += '</tr>';
         }
-        result += '</table>';
+        result += '</table></div>';
         return result;
     }
     makeAjustedCell(val, aj, loc) {
