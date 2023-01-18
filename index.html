@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="spreadsheetAPI1.css">
-    <script src="spreadsheetAPI1.js"></script>
+    <link rel="stylesheet" href="sheetmap.css">
+    <script src="sheetmap.js"></script>
     <title>speadsheetAPI1</title>
 </head>
 <body>
@@ -54,7 +54,7 @@ function myFilterFunction(row) {
     return ( Areas=="Trollhättan" || Areas=="Karlstad" || Areas=="Alingsås" ) && ( Status=="Yellow" || Status=="Green" ) && ( Sent=="Sent" );
 }
 
-const ss = new SpreadsheetApp(TablePreferences);
+const ss = new SheetMap(TablePreferences);
 ss.fetch('Referrals', 'A2:G', 'BIGtb');
     </script>
 </body>
