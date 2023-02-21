@@ -94,7 +94,8 @@ class SheetMap {
 
         this.prefs = prefs;
         this.prefs.editable_cols = prefs.editable_cols || {};
-        this.prefs.hidden_cols = prefs.hidden_cols.sort() || [];
+        this.prefs.hidden_cols = prefs.hidden_cols || [];
+        this.prefs.hidden_cols = this.prefs.hidden_cols.sort();
         this.prefs.conditional_formatting = prefs.conditional_formatting || {};
         this.colsToChange = Object.keys(this.prefs.editable_cols).concat(this.prefs.hidden_cols).map(x => parseInt(x));
         SheetMap.colsToHide = this.prefs.hidden_cols;
