@@ -21,7 +21,7 @@ A simple JavaScript API to edit ranges of data on Google Sheets without any hast
         reference_col : 0
     };
 
-    const ss = new SpreadsheetApp(TablePreferences);
+    const ss = new SheetMap(TablePreferences);
     ss.fetch('Sheet1', 'A1:C', 'myDIV');
     </script>
 </body>
