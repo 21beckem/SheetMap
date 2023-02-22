@@ -232,10 +232,10 @@ class SheetMap {
                         continue;
                     }
                     const aj = this.prefs.editable_cols[j];
-                    result += '<td id="' + idStr + '"' + this.addConditionalFormatting(arr[i][j], aj, [i,j]) + '>' + this.makeAjustedCell(arr[i][j], aj, [i,j]) + '</td>';
+                    result += '<td id="' + idStr + '"' + this.addConditionalFormatting(arr[i][j], [i,j]) + '>' + this.makeAjustedCell(arr[i][j], aj, [i,j]) + '</td>';
 
                 } else {
-                    result += '<td id="' + idStr + '">' + arr[i][j] + '</td>';
+                    result += '<td id="' + idStr + '"' + this.addConditionalFormatting(arr[i][j], [i,j]) + '>' + arr[i][j] + '</td>';
                 }
             }
             result += '</tr>';
@@ -259,20 +259,33 @@ class SheetMap {
 
         return val;
     }
-    addConditionalFormatting(val, aj, loc) {
+    addConditionalFormatting(val, loc) {
+        let output = '';
+        if (this.prefs.conditional_formatting.hasOwnProperty('overall')) {
+            const opsList = SheetMap.conditional_formatting['overall'];
+            for (let i = 0; i < Object.keys(opsList).length; i++) {
+                const ops = opsList[Object.keys(opsList)[i]];
+                if (val == Object.keys(opsList)[i]) {
+                    //this is where we actually apply the formatting:
+                    output = 'style="' + ops + '"';
+                    //console.log(val);
+                }
+            }
+            //console.log(val, aj, loc, ops);
+        }
         if (SheetMap.conditionalCols.includes(loc[1])) {
             const opsList = SheetMap.conditional_formatting[loc[1]];
             for (let i = 0; i < Object.keys(opsList).length; i++) {
                 const ops = opsList[Object.keys(opsList)[i]];
                 if (val == Object.keys(opsList)[i]) {
                     //this is where we actually apply the formatting:
-                    return 'style="' + ops + '"';
+                    output = 'style="' + ops + '"';
                     //console.log(val);
                 }
             }
             //console.log(val, aj, loc, ops);
         }
-        return '';
+        return output;
     }
 }
 window.onbeforeunload = function () {
