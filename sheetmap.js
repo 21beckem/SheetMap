@@ -94,6 +94,7 @@ class SheetMap {
 
         this.prefs = prefs;
         this.prefs.editable_cols = prefs.editable_cols || {};
+        this.prefs.fetchStyles = prefs.fetchStyles || false;
         this.prefs.hidden_cols = prefs.hidden_cols || [];
         this.prefs.hidden_cols = this.prefs.hidden_cols.sort();
         this.prefs.conditional_formatting = prefs.conditional_formatting || {};
@@ -186,35 +187,41 @@ class SheetMap {
             location.reload();
         });
     }
-    fetch(pgName, range, container_id) {
+    async fetch(pgName, range, container_id) {
         this.fetchedRange = range;
         this.fetchedPgName = pgName;
-        fetch(this.prefs.url + '?type=r&range=' + range + '&pgNam=' + pgName)
-        .then((response) => response.json())
-        .then((data) => {
-            SheetMap.rawRes = data;
-            if (this.prefs.hasOwnProperty('filter')) {
-                //console.log(data);
-                SheetMap.pairedCol = Array();
-                let i = -1;
-                let ii = 0;
-                data = data.filter((row) => {
-                    i += 1;
-                    if (this.prefs.filter.function(row)) {
-                        SheetMap.pairedCol.push([i, ii]);
-                        ii += 1;
-                        return true;
-                    } else {
-                        return false;
-                    }
-                });
-            }
-            let tb = this.makeTableHTML(data);
-            document.getElementById(container_id).innerHTML = tb;
-            SheetMap.hideSaveButton(true);
-        });
+        const mainFetch = await fetch(this.prefs.url + '?type=r&range=' + range + '&pgNam=' + pgName);
+        const data = await mainFetch.json();
+        let stylesJson = null;
+        console.log(data);
+        if (this.prefs.fetchStyles) {
+            const styRes = await fetch(this.prefs.url + '?type=r_basic_style&range=' + range + '&pgNam=' + pgName);
+            stylesJson = await styRes.json();
+            console.log(stylesJson);
+        }
+
+        SheetMap.rawRes = data;
+        if (this.prefs.hasOwnProperty('filter')) {
+            //console.log(data);
+            SheetMap.pairedCol = Array();
+            let i = -1;
+            let ii = 0;
+            data = data.filter((row) => {
+                i += 1;
+                if (this.prefs.filter.function(row)) {
+                    SheetMap.pairedCol.push([i, ii]);
+                    ii += 1;
+                    return true;
+                } else {
+                    return false;
+                }
+            });
+        }
+        let tb = this.makeTableHTML(data, stylesJson);
+        document.getElementById(container_id).innerHTML = tb;
+        SheetMap.hideSaveButton(true);
     }
-    makeTableHTML(arr) {
+    makeTableHTML(arr, stylesJson) {
         var result = '<div class="SheetMapTable"><button id="SheetMap_saveBtn" onclick="ss.saveChanges();">Save</button>';
         result += '<table class="sheetTbl" border=1>';
         if (this.prefs.hasOwnProperty('header')) {
@@ -227,15 +234,19 @@ class SheetMap {
             result += '<tr id="rowRangeId_' + i + '">';
             for (var j=0; j<arr[i].length; j++) {
                 const idStr = 'cellRangeId_' + i + ',' + j;
+                let styStr = '';
+                if (stylesJson != null) {
+                    styStr = stylesJson[i][j];
+                }
                 if (this.colsToChange.includes(j)) {
                     if (this.prefs.hidden_cols.includes(j)) {
                         continue;
                     }
                     const aj = this.prefs.editable_cols[j];
-                    result += '<td id="' + idStr + '"' + this.addConditionalFormatting(arr[i][j], [i,j]) + '>' + this.makeAjustedCell(arr[i][j], aj, [i,j]) + '</td>';
+                    result += '<td id="' + idStr + '" style="' + this.addConditionalFormatting(arr[i][j], [i,j]) + styStr + '">' + this.makeAjustedCell(arr[i][j], aj, [i,j]) + '</td>';
 
                 } else {
-                    result += '<td id="' + idStr + '"' + this.addConditionalFormatting(arr[i][j], [i,j]) + '>' + arr[i][j] + '</td>';
+                    result += '<td id="' + idStr + '" style="' + this.addConditionalFormatting(arr[i][j], [i,j]) + styStr + '">' + arr[i][j] + '</td>';
                 }
             }
             result += '</tr>';
@@ -267,7 +278,7 @@ class SheetMap {
                 const ops = opsList[Object.keys(opsList)[i]];
                 if (val == Object.keys(opsList)[i]) {
                     //this is where we actually apply the formatting:
-                    output = 'style="' + ops + '"';
+                    output = ops;
                     //console.log(val);
                 }
             }
@@ -279,7 +290,7 @@ class SheetMap {
                 const ops = opsList[Object.keys(opsList)[i]];
                 if (val == Object.keys(opsList)[i]) {
                     //this is where we actually apply the formatting:
-                    output = 'style="' + ops + '"';
+                    output = ops;
                     //console.log(val);
                 }
             }

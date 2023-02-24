@@ -13,27 +13,13 @@
     <script>
 
 const TablePreferences = {
-    url : 'https://script.google.com/macros/s/AKfycbwuavvfPOAIsCXQmcwivpk0TmT_ItuC2szPw_9ARDLKc9M4JLTlvHePQi8XWB0sz6wf/exec',
-    reference_col : 0,
-    conditional_formatting : {
-        'overall' : {
-            'DC' : "background-color:black; color:#FFD965",
-            '~ Church ~' : "background-color:black; color:#FFD965",
-            'Webinar' : "background-color:black; color:#FFD965",
-            'Skellefteå': "background-color: #D5A6BD",
-            'Eskilstuna': "background-color: #215A6C",
-            'Sundsvall': "background-color: #EA9999",
-            'Trollhättan': "background-color: #B7D7A8",
-            'Kungsbacka': "background-color: #A4C2F4",
-            'Kristianstad': "background-color: #F9CB9C",
-            'Örnsköldsvik': "background-color: #B4A7D6",
-            'SMOEs': "background-color: #C5FF8A"
-        }
-    }
+    url : 'https://script.google.com/macros/s/AKfycby_rO87ZhJ5Y-DzarnSNBe_diBCMsHfxr_qp6i0MWf__7ilgtDp01q8V9QFt8ZeQziI/exec',
+    fetchStyles : true,
+    reference_col : 0
 };
 
 const ss = new SheetMap(TablePreferences);
-ss.fetch('Schedule', 'A1:N73', 'myDIV');
+ss.fetch('in-progress-schedule', 'B1:8', 'myDIV');
 
     </script>
 </body>
