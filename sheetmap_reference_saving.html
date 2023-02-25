@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="sheetmap_reference_saving.css">
+    <script src="sheetmap_reference_saving.js"></script>
+    <title>speadsheetAPI1</title>
+</head>
+<body>
+    <div id="myDIV"><div>
+    <script>
+
+const TablePreferences = {
+    url : 'https://script.google.com/macros/s/AKfycby_rO87ZhJ5Y-DzarnSNBe_diBCMsHfxr_qp6i0MWf__7ilgtDp01q8V9QFt8ZeQziI/exec',
+    fetchStyles : true,
+    reference_col : 0
+};
+
+const ss = new SheetMap_ReferenceSaving(TablePreferences);
+ss.fetch('in-progress-schedule', 'B1:8', 'myDIV');
+
+    </script>
+</body>
+</html>
