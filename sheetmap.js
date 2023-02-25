@@ -1,5 +1,16 @@
 //localStorage.setItem(cname, cvalue);
 //localStorage.getItem(cname);
+Array.prototype.locationOf2d = function(del) {
+    for (let i = 0; i < this.length; i++) {
+        const row = this[i];
+        for (let j = 0; j < row.length; j++) {
+            if (row[j] == del) {
+                return [i, j];
+            }
+        }
+    }
+    return [-1, -1];
+}
 class SheetMap {
     constructor(prefs = {}) {
         //check prefs
@@ -33,6 +44,7 @@ class SheetMap {
             console.log(dropdownOptions);
         }
         let conditional_formatting = this.makeOurOwnConditionalFormatting(data, stylesJson, dropdownOptions);
+        console.log(conditional_formatting);
         
 
         SheetMap.rawRes = data;
@@ -92,24 +104,18 @@ class SheetMap {
             return [];
         }
 
-        // now do all the special stuff
         let condish = Array();
         for (let i = 0; i < options.length; i++) {
             const op = options[i];
-            
-            // find op in 'allData'
-
-            
-            // find that same color validation in 'styles'
-
-
-            // save it
-            //condish.push();
+            let [loc1, loc2] = allData.locationOf2d(op);
+            if (loc1 == -1) {
+                condish.push('');
+                continue;
+            }
+            let st = styles[loc1][loc2];
+            condish.push(st);
         }
-
-        // dance
-
-        // return
+        return condish;
     }
 }
 window.onbeforeunload = function () {
