@@ -13,13 +13,16 @@
     <script>
 
 const TablePreferences = {
-    url : 'https://script.google.com/macros/s/AKfycby_rO87ZhJ5Y-DzarnSNBe_diBCMsHfxr_qp6i0MWf__7ilgtDp01q8V9QFt8ZeQziI/exec',
-    fetchStyles : true,
-    reference_col : 0
+    url : 'https://script.google.com/macros/s/AKfycbxC71KgWaHlaDacIO5_a0_0GjNItro-ypjG-eaySeLQTw5XEojvm-puQlK7gnl_Bny4/exec',
+    data_validation : 'B8',
+    fetchStyles : true
 };
 
 const ss = new SheetMap(TablePreferences);
-ss.fetch('in-progress-schedule', 'B1:8', 'myDIV');
+ss.fetch('test SheetMap', 'B1:8').then(() => {
+    ss.makeTableHTML('myDIV');
+});
+
 
     </script>
 </body>

@@ -167,7 +167,7 @@ class SheetMap_ReferenceSaving {
         // make loading screen
         // - - -
         //console.log(toSave, options);
-        const reqUrl = this.prefs.url + '?type=w&range=' + this.fetchedRange + '&pgNam=' + this.fetchedPgName + '&rows=' + encodeURIComponent(JSON.stringify(toSave)) + '&options=' + encodeURIComponent(JSON.stringify(options));
+        const reqUrl = this.prefs.url + '?type=w_reference_saving&range=' + this.fetchedRange + '&pgNam=' + this.fetchedPgName + '&rows=' + encodeURIComponent(JSON.stringify(toSave)) + '&options=' + encodeURIComponent(JSON.stringify(options));
         console.log(reqUrl);
         fetch(reqUrl)
         .then((response) => response.json())
