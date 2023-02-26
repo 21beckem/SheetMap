@@ -13,16 +13,19 @@
     <script>
 
 const TablePreferences = {
-    url : 'https://script.google.com/macros/s/AKfycbxC71KgWaHlaDacIO5_a0_0GjNItro-ypjG-eaySeLQTw5XEojvm-puQlK7gnl_Bny4/exec',
+    url : 'https://script.google.com/macros/s/AKfycbz4QXXjeLFUPltyk0Ufl--MMyw5kR9WwyBHBABxYD6Vr4n-o-aQ3mgPRufrbBTlnVPO/exec',
     data_validation : 'B8',
     fetchStyles : true
 };
 
 const ss = new SheetMap(TablePreferences);
-ss.fetch('test SheetMap', 'B1:8').then(() => {
-    ss.makeTableHTML('myDIV');
-});
+async function main() {
+    //await ss.fetch('test SheetMap', 'B1:8');
+    await ss.makeTableHTML('myDIV');
+}
+main();
 
+// to reset saved data:  localStorage.removeItem('SheetMap_vars');
 
     </script>
 </body>

@@ -1,5 +1,3 @@
-//localStorage.setItem(cname, cvalue);
-//localStorage.getItem(cname);
 Array.prototype.locationOf2d = function(del) {
     for (let i = 0; i < this.length; i++) {
         const row = this[i];
@@ -23,11 +21,12 @@ class SheetMap {
             }
         });
         this.prefs = prefs;
-        this.vars = JSON.parse(localStorage.getItem('SheetMap_vars'));
+        SheetMap.vars = JSON.parse(localStorage.getItem('SheetMap_vars'));
     }
+    static vars;
+    static setChangedCells(lst) { return localStorage.setItem('SheetMap_changedCells', JSON.stringify(lst)); }
+    static getChangedCells() { return JSON.parse(localStorage.getItem('SheetMap_changedCells') || {}); }
     async fetch(pgName, range) {
-        this.fetchedRange = range;
-        this.fetchedPgName = pgName;
         const mainFetch = await fetch(this.prefs.url + '?type=r&range=' + range + '&pgNam=' + pgName);
         const data = await mainFetch.json();
         let stylesJson = [];
@@ -46,33 +45,26 @@ class SheetMap {
         let conditional_formatting = this.makeOurOwnConditionalFormatting(data, stylesJson, dropdownOptions);
         console.log(conditional_formatting);
         
-
-        SheetMap.rawRes = data;
-        if (this.prefs.hasOwnProperty('filter')) {
-            //console.log(data);
-            SheetMap.pairedCol = Array();
-            let i = -1;
-            let ii = 0;
-            data = data.filter((row) => {
-                i += 1;
-                if (this.prefs.filter.function(row)) {
-                    SheetMap.pairedCol.push([i, ii]);
-                    ii += 1;
-                    return true;
-                } else {
-                    return false;
-                }
-            });
+        let conditional_lookup = {};
+        for (let i = 0; i < dropdownOptions.length; i++) {
+            conditional_lookup[ dropdownOptions[i] ] = conditional_formatting[i];
         }
         let SheetMap_vars = {
+            prefs : this.prefs,
+            sheet_range : range,
+            sheet_pgName : pgName,
             originalFetchedData : data,
             tableDataNOW : data,
-            conditional_formatting : conditional_formatting,
+            dropdownOptions : dropdownOptions,
+            conditional_formatting_styles : conditional_formatting,
+            conditional_lookup : conditional_lookup
         }
+        SheetMap.vars = SheetMap_vars;
         localStorage.setItem('SheetMap_vars', JSON.stringify(SheetMap_vars));
+        SheetMap.setChangedCells({});
     }
     makeTableHTML(container_id = null) {
-        let arr = this.vars.tableDataNOW;
+        let arr = SheetMap.vars.tableDataNOW;
         var result = '<div class="SheetMapTable">';
         result += '<table class="sheetTbl" border=1>';
         if (this.prefs.hasOwnProperty('header')) {
@@ -86,10 +78,10 @@ class SheetMap {
             for (var j=0; j<arr[i].length; j++) {
                 const idStr = 'cellRangeId_' + i + ',' + j;
                 let styStr = '';
-                // if (stylesJson.length != 0) {
-                //     styStr = stylesJson[i][j];
-                // }
-                result += '<td id="' + idStr + '" style="' + styStr + '">' + arr[i][j] + '</td>';
+                if (SheetMap.vars.dropdownOptions.includes(arr[i][j])) {
+                    styStr = SheetMap.vars.conditional_formatting_styles[ SheetMap.vars.dropdownOptions.indexOf(arr[i][j]) ];
+                }
+                result += '<td id="' + idStr + '" style="' + styStr + '">' + this.makeAjustedCell(arr[i][j], [i,j]) + '</td>';
             }
             result += '</tr>';
         }
@@ -98,6 +90,23 @@ class SheetMap {
             return result;
         }
         document.getElementById(container_id).innerHTML = result;
+    }
+    makeAjustedCell(val, loc) {
+        try {
+            if (SheetMap.vars.dropdownOptions.includes(val)) {
+                let cellBeenEdited = ( Object.keys(SheetMap.getChangedCells()).includes(loc[0]+','+loc[1]) ) ? 'sheetMap_EditedCell' : '';
+                let output = '<select id="dropdown_' + loc.join(',') + '" class="' + cellBeenEdited + '" onchange="SheetMap.dropdownChange(' + loc[0] + ',' + loc[1] + ',this)">';
+                for (let i = 0; i < SheetMap.vars.dropdownOptions.length; i++) {
+                    const el = SheetMap.vars.dropdownOptions[i];
+                    const sel = (val == el) ? ' selected' : '';
+                    output += '<option value="' + el + '"' + sel + '>' + el + '</option>';
+                }
+                output += '</select>';
+                return output;
+            }
+        } catch (e) {}
+
+        return val;
     }
     makeOurOwnConditionalFormatting(allData, styles, options) {
         if (styles.length == 0 || options.length == 0) {
@@ -117,9 +126,30 @@ class SheetMap {
         }
         return condish;
     }
-}
-window.onbeforeunload = function () {
-    if (SheetMap.editsMade) {
-        return "If you reload this page, your previous action will be repeated";
+    static dropdownChange(loc1, loc2, el) {
+        //console.log(loc1, loc2, el.parentElement.style.cssText, SheetMap.vars.originalFetchedData[loc1][loc2]);
+        el.parentElement.style.cssText = SheetMap.vars.conditional_lookup[el.value];
+        let changedCells = SheetMap.getChangedCells();
+        if (SheetMap.vars.originalFetchedData[loc1][loc2] != el.value) {
+            el.classList.add('sheetMap_EditedCell');
+            changedCells[ loc1+','+loc2 ] = el.value;
+        } else {
+            el.classList.remove('sheetMap_EditedCell');
+            delete changedCells[ loc1+','+loc2 ];
+        }
+        SheetMap.setChangedCells(changedCells);
+        SheetMap.vars.tableDataNOW[loc1][loc2] = el.value;
+        localStorage.setItem('SheetMap_vars', JSON.stringify(SheetMap.vars));
+        //console.log(changedCells);
+    }
+    async syncChanges() {
+        return await SheetMap.syncChanges();
+    }
+    static async syncChanges() {
+        const syncURI = SheetMap.vars.prefs.url + '?type=w&range=' + encodeURI(SheetMap.vars.sheet_range) + '&pgNam=' + encodeURI(SheetMap.vars.sheet_pgName) + '&changed_cells=' + encodeURI( JSON.stringify(SheetMap.getChangedCells()) );
+        const mainFetch = await fetch(syncURI);
+        console.log(syncURI);
+        const data = await mainFetch.json();
+        console.log(data);
     }
 }

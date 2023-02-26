@@ -55,3 +55,6 @@
     margin: 0;
     position: relative;
 }
+.sheetMap_EditedCell {
+    font-weight: bold;
+}
