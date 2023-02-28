@@ -20,8 +20,9 @@ const TablePreferences = {
 
 const ss = new SheetMap(TablePreferences);
 async function main() {
-    //await ss.fetch('test SheetMap', 'B1:8');
-    await ss.makeTableHTML('myDIV');
+    //await ss.fetch('in-progress-schedule', 'B1:8');
+    //SheetMap.makeTableHTML('myDIV');
+    SheetMap.makeColDivsHTML('myDIV');
 }
 main();
 

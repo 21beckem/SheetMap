@@ -9,6 +9,9 @@ Array.prototype.locationOf2d = function(del) {
     }
     return [-1, -1];
 }
+Array.prototype.transposeArray = function() {
+    return this[0].map((_, colIndex) => this.map(row => row[colIndex]));
+}
 class SheetMap {
     constructor(prefs = {}) {
         //check prefs
@@ -63,15 +66,15 @@ class SheetMap {
         localStorage.setItem('SheetMap_vars', JSON.stringify(SheetMap_vars));
         SheetMap.setChangedCells({});
     }
-    makeTableHTML(container_id = null) {
+    static makeTableHTML(container_id = null) {
         let arr = SheetMap.vars.tableDataNOW;
         var result = '<div class="SheetMapTable">';
         result += '<table class="sheetTbl" border=1>';
-        if (this.prefs.hasOwnProperty('header')) {
+        if (SheetMap.vars.prefs.hasOwnProperty('header')) {
             SheetMap.colsToHide.forEach(n => {
-                this.prefs.header.splice(n, 1);
+                SheetMap.vars.prefs.header.splice(n, 1);
             });
-            result += '<tr><th>' + this.prefs.header.join('</th><th>') + '</th></tr>';
+            result += '<tr><th>' + SheetMap.vars.prefs.header.join('</th><th>') + '</th></tr>';
         }
         for (var i=0; i<arr.length; i++) {
             result += '<tr id="rowRangeId_' + i + '">';
@@ -81,7 +84,7 @@ class SheetMap {
                 if (SheetMap.vars.dropdownOptions.includes(arr[i][j])) {
                     styStr = SheetMap.vars.conditional_formatting_styles[ SheetMap.vars.dropdownOptions.indexOf(arr[i][j]) ];
                 }
-                result += '<td id="' + idStr + '" style="' + styStr + '">' + this.makeAjustedCell(arr[i][j], [i,j]) + '</td>';
+                result += '<td id="' + idStr + '" style="' + styStr + '">' + SheetMap.makeAjustedCell(arr[i][j], [i,j]) + '</td>';
             }
             result += '</tr>';
         }
@@ -91,7 +94,38 @@ class SheetMap {
         }
         document.getElementById(container_id).innerHTML = result;
     }
-    makeAjustedCell(val, loc) {
+    static makeColDivsHTML(container_id = null) {
+        let arr = SheetMap.vars.tableDataNOW;
+        let result = Array();
+        let thisRow = Array();
+        for (var i=0; i<arr.length; i++) {
+            thisRow = Array();
+            for (var j=0; j<arr[i].length; j++) {
+                const idStr = 'cellRangeId_' + i + ',' + j;
+                let styStr = '';
+                if (SheetMap.vars.dropdownOptions.includes(arr[i][j])) {
+                    styStr = SheetMap.vars.conditional_formatting_styles[ SheetMap.vars.dropdownOptions.indexOf(arr[i][j]) ];
+                }
+                thisRow.push('<div id="' + idStr + '" style="' + styStr + '">' + SheetMap.makeAjustedCell(arr[i][j], [i,j]) + '</div>');
+            }
+            result.push(thisRow);
+        }
+        console.log(result);
+        // now flip it
+        result = result.transposeArray();
+        console.log(result);
+        let htmlOutput = '<div id="SheetMapColDivs">';
+        for (let i = 0; i < result.length; i++) {
+            const col = result[i];
+            htmlOutput += '<div class="tableCol"><div>' + col.join('') + '</div></div>';
+        }
+        htmlOutput += '</div>';
+        if (container_id == null) {
+            return htmlOutput;
+        }
+        document.getElementById(container_id).innerHTML = htmlOutput;
+    }
+    static makeAjustedCell(val, loc) {
         try {
             if (SheetMap.vars.dropdownOptions.includes(val)) {
                 let cellBeenEdited = ( Object.keys(SheetMap.getChangedCells()).includes(loc[0]+','+loc[1]) ) ? 'sheetMap_EditedCell' : '';
