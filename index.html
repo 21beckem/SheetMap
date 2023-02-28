@@ -9,20 +9,38 @@
     <title>speadsheetAPI1</title>
 </head>
 <body>
-    <div id="myDIV"><div>
+    <div id="scheduleParent">
+        <div id="timesContainer"></div>
+    </div>
     <script>
+
+function _(x) { return document.getElementById(x); }
 
 const TablePreferences = {
     url : 'https://script.google.com/macros/s/AKfycbz4QXXjeLFUPltyk0Ufl--MMyw5kR9WwyBHBABxYD6Vr4n-o-aQ3mgPRufrbBTlnVPO/exec',
-    data_validation : 'B8',
+    data_validation : 'E8',
     fetchStyles : true
 };
 
-const ss = new SheetMap(TablePreferences);
+function scrollToToday(data, win) {
+    let niceDate = ["January","February","March","April","May","June","July","August","September","October","November","December"][new Date().getMonth()] + ' ' + String(new Date().getDate());
+    console.log(niceDate);
+    let iOfToday = data[0].indexOf(niceDate);
+    console.log(iOfToday);
+}
+
 async function main() {
-    //await ss.fetch('in-progress-schedule', 'B1:8');
+    //const ss = new SheetMap(TablePreferences);
+    //await ss.fetch('Schedule', 'C1:8');
     //SheetMap.makeTableHTML('myDIV');
-    SheetMap.makeColDivsHTML('myDIV');
+    SheetMap.load();
+    _('scheduleParent').innerHTML += SheetMap.makeColDivsHTML(hideC=[0,1]);
+    let timesContainer = _('timesContainer');
+    timesContainer.innerHTML += '<div></div>';
+    for (let i = 1; i < SheetMap.vars.tableDataNOW.length; i++) {
+        timesContainer.innerHTML += '<div>' + SheetMap.vars.tableDataNOW[i][0] + '-' + SheetMap.vars.tableDataNOW[i][1] + '</div>';
+    }
+    scrollToToday(SheetMap.vars.tableDataNOW, _('SheetMapColDivs'));
 }
 main();
 

@@ -26,6 +26,9 @@ class SheetMap {
         this.prefs = prefs;
         SheetMap.vars = JSON.parse(localStorage.getItem('SheetMap_vars'));
     }
+    static load() {
+        SheetMap.vars = JSON.parse(localStorage.getItem('SheetMap_vars'));
+    }
     static vars;
     static setChangedCells(lst) { return localStorage.setItem('SheetMap_changedCells', JSON.stringify(lst)); }
     static getChangedCells() { return JSON.parse(localStorage.getItem('SheetMap_changedCells') || {}); }
@@ -66,7 +69,7 @@ class SheetMap {
         localStorage.setItem('SheetMap_vars', JSON.stringify(SheetMap_vars));
         SheetMap.setChangedCells({});
     }
-    static makeTableHTML(container_id = null) {
+    static makeTableHTML(hideC = []) {
         let arr = SheetMap.vars.tableDataNOW;
         var result = '<div class="SheetMapTable">';
         result += '<table class="sheetTbl" border=1>';
@@ -79,6 +82,9 @@ class SheetMap {
         for (var i=0; i<arr.length; i++) {
             result += '<tr id="rowRangeId_' + i + '">';
             for (var j=0; j<arr[i].length; j++) {
+                if (hideC.includes(j)) {
+                    continue;
+                }
                 const idStr = 'cellRangeId_' + i + ',' + j;
                 let styStr = '';
                 if (SheetMap.vars.dropdownOptions.includes(arr[i][j])) {
@@ -89,18 +95,18 @@ class SheetMap {
             result += '</tr>';
         }
         result += '</table></div>';
-        if (container_id == null) {
-            return result;
-        }
-        document.getElementById(container_id).innerHTML = result;
+        return result;
     }
-    static makeColDivsHTML(container_id = null) {
+    static makeColDivsHTML(hideC = []) {
         let arr = SheetMap.vars.tableDataNOW;
         let result = Array();
         let thisRow = Array();
         for (var i=0; i<arr.length; i++) {
             thisRow = Array();
             for (var j=0; j<arr[i].length; j++) {
+                if (hideC.includes(j)) {
+                    continue;
+                }
                 const idStr = 'cellRangeId_' + i + ',' + j;
                 let styStr = '';
                 if (SheetMap.vars.dropdownOptions.includes(arr[i][j])) {
@@ -120,10 +126,7 @@ class SheetMap {
             htmlOutput += '<div class="tableCol"><div>' + col.join('') + '</div></div>';
         }
         htmlOutput += '</div>';
-        if (container_id == null) {
-            return htmlOutput;
-        }
-        document.getElementById(container_id).innerHTML = htmlOutput;
+        return htmlOutput;
     }
     static makeAjustedCell(val, loc) {
         try {
@@ -141,6 +144,9 @@ class SheetMap {
         } catch (e) {}
 
         return val;
+    }
+    static getSize() {
+        return [SheetMap.vars.originalFetchedData[0].length, SheetMap.vars.originalFetchedData.length];
     }
     makeOurOwnConditionalFormatting(allData, styles, options) {
         if (styles.length == 0 || options.length == 0) {
