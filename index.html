@@ -22,11 +22,12 @@ const TablePreferences = {
     fetchStyles : true
 };
 
-function scrollToToday(data, win) {
+function scrollToToday(data, win, numberOfHiddenCols) {
     let niceDate = ["January","February","March","April","May","June","July","August","September","October","November","December"][new Date().getMonth()] + ' ' + String(new Date().getDate());
     console.log(niceDate);
-    let iOfToday = data[0].indexOf(niceDate);
+    let iOfToday = data[0].indexOf(niceDate) - numberOfHiddenCols;
     console.log(iOfToday);
+    win.scrollTo(win.offsetWidth*iOfToday, 0);
 }
 
 async function main() {
@@ -34,13 +35,14 @@ async function main() {
     //await ss.fetch('Schedule', 'C1:8');
     //SheetMap.makeTableHTML('myDIV');
     SheetMap.load();
-    _('scheduleParent').innerHTML += SheetMap.makeColDivsHTML(hideC=[0,1]);
+    const colsToHide = [0,1];
+    _('scheduleParent').innerHTML += SheetMap.makeColDivsHTML(hideC=colsToHide);
     let timesContainer = _('timesContainer');
     timesContainer.innerHTML += '<div></div>';
     for (let i = 1; i < SheetMap.vars.tableDataNOW.length; i++) {
         timesContainer.innerHTML += '<div>' + SheetMap.vars.tableDataNOW[i][0] + '-' + SheetMap.vars.tableDataNOW[i][1] + '</div>';
     }
-    scrollToToday(SheetMap.vars.tableDataNOW, _('SheetMapColDivs'));
+    scrollToToday(SheetMap.vars.tableDataNOW, _('SheetMapColDivs'), colsToHide.length);
 }
 main();
 
