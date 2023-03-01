@@ -34,7 +34,7 @@
     width: 100%;
 	scroll-snap-align: center;
 	flex: none;
-    font-size: 30px;
+    font-size: 22px;
     align-content: stretch;
 }
 #SheetMapColDivs > .tableCol > div {
