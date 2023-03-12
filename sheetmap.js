@@ -33,21 +33,19 @@ class SheetMap {
     static setChangedCells(lst) { return localStorage.setItem('SheetMap_changedCells', JSON.stringify(lst)); }
     static getChangedCells() { return JSON.parse(localStorage.getItem('SheetMap_changedCells') || {}); }
     async fetch(pgName, range) {
-        const mainFetch = await fetch(this.prefs.url + '?type=r&range=' + range + '&pgNam=' + pgName);
-        const data = await mainFetch.json();
-        let stylesJson = [];
+        let mf_wait = this.fetch_mainFetch(pgName, range);
+        let sy_wait = (this.prefs.hasOwnProperty('fetchStyles')) ? this.fetch_fetchStyles(pgName, range) : [];
+        let dv_wait = (this.prefs.hasOwnProperty('data_validation')) ?  this.fetch_data_validation(pgName, range) : [];
+        
+        const data = await mf_wait;
+        let stylesJson = await sy_wait;
+        let dropdownOptions = await dv_wait;
+
         console.log(data);
-        if (this.prefs.hasOwnProperty('fetchStyles')) {
-            const styRes = await fetch(this.prefs.url + '?type=r_basic_style&range=' + range + '&pgNam=' + pgName);
-            stylesJson = await styRes.json();
-            console.log(stylesJson);
-        }
-        let dropdownOptions = [];
-        if (this.prefs.hasOwnProperty('data_validation')) {
-            const validationRes = await fetch(this.prefs.url + '?type=r_get_data_validation&range=' + this.prefs.data_validation + '&pgNam=' + pgName);
-            dropdownOptions = await validationRes.json();
-            console.log(dropdownOptions);
-        }
+        console.log(stylesJson);
+        console.log(dropdownOptions);
+
+
         let conditional_formatting = this.makeOurOwnConditionalFormatting(data, stylesJson, dropdownOptions);
         console.log(conditional_formatting);
         
@@ -68,6 +66,24 @@ class SheetMap {
         SheetMap.vars = SheetMap_vars;
         localStorage.setItem('SheetMap_vars', JSON.stringify(SheetMap_vars));
         SheetMap.setChangedCells({});
+    }
+    async fetch_mainFetch(pgName, range) {
+        const mainFetch = await fetch(this.prefs.url + '?type=r&range=' + range + '&pgNam=' + pgName);
+        const data = await mainFetch.json();
+        //console.log(data);
+        return data;
+    }
+    async fetch_fetchStyles(pgName, range) {
+        const styRes = await fetch(this.prefs.url + '?type=r_basic_style&range=' + range + '&pgNam=' + pgName);
+        let stylesJson = await styRes.json();
+        //console.log(stylesJson);
+        return stylesJson;
+    }
+    async fetch_data_validation(pgName, range) {
+        const validationRes = await fetch(this.prefs.url + '?type=r_get_data_validation&range=' + this.prefs.data_validation + '&pgNam=' + pgName);
+        let dropdownOptions = await validationRes.json();
+        //console.log(dropdownOptions);
+        return dropdownOptions;
     }
     static makeTableHTML(hideC = []) {
         let arr = SheetMap.vars.tableDataNOW;
