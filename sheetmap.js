@@ -189,6 +189,9 @@ class SheetMap {
         if (SheetMap.vars == null) {
             return false;
         }
+        if (Object.keys(SheetMap.getChangedCells()).length === 0) {
+            return true;
+        }
         const syncURI = SheetMap.vars.prefs.url + '?type=w&range=' + encodeURI(SheetMap.vars.sheet_range) + '&pgNam=' + encodeURI(SheetMap.vars.sheet_pgName) + '&changed_cells=' + encodeURI( JSON.stringify(SheetMap.getChangedCells()) );
         const mainFetch = await fetch(syncURI);
         console.log(syncURI);
