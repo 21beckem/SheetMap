@@ -48,6 +48,7 @@
 #SheetMapColDivs > .tableCol > div > div {
     height: calc(99% / 7);
     margin-bottom: 2px;
+    white-space: break-spaces;
 }
 #SheetMapColDivs select {
     border-radius: 5px;
